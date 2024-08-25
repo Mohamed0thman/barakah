@@ -4,9 +4,9 @@ import { create } from "zustand";
 export interface CartState {
   totalPrice: number;
   totalItem: number;
-  cartItems: CartItem[] | CartProduct[];
+  cartItems: CartItem[];
   setCartData: (cart: Cart, totalItem: number) => void;
-  addToCart: (item: CartItem | CartProduct) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
@@ -17,8 +17,6 @@ export const useCartStore = create<CartState>((set) => ({
   totalPrice: 0,
   totalItem: 0,
   setCartData: (cart, totalItem) => {
-    console.log("cart, totalItem", cart, totalItem);
-
     set({ cartItems: cart.products, totalItem });
   },
   addToCart: (item) =>
@@ -29,14 +27,19 @@ export const useCartStore = create<CartState>((set) => ({
       if (existingItem) {
         return {
           ...state,
-          cart: state.cartItems.map((cartItem) =>
+          totalItem: state.totalItem + item.quantity,
+          cartItems: state.cartItems.map((cartItem) =>
             cartItem.productId === item.productId
               ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
               : cartItem
           ),
         };
       } else {
-        return { ...state, cartItems: [...state.cartItems, item] };
+        return {
+          ...state,
+          totalItem: state.totalItem + item.quantity,
+          cartItems: [...state.cartItems, item],
+        };
       }
     }),
   removeFromCart: (id) =>
@@ -48,11 +51,13 @@ export const useCartStore = create<CartState>((set) => ({
     set((state) => ({
       ...state,
       cartItems: state.cartItems.map((item) =>
-        item.productId === id ? { ...item, quantity } : item
+        item.productId === id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
       ),
     })),
   clearCart: () =>
-    set((state) => ({
+    set((state) => ({ 
       ...state,
       cartItems: [],
     })),

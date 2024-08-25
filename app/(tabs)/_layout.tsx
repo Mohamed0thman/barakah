@@ -4,12 +4,11 @@ import React from "react";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Typography } from "@/components";
 import { View } from "react-native";
-import { CartProvider, useCartContext } from "@/context";
+import { CartProvider } from "@/context";
+import { useCartStore } from "@/store";
 
 const TabsList = () => {
-  const totalItem = useCartContext((state) => state.totalItem);
-
-  console.log("totalItem", totalItem);
+  const { totalItem } = useCartStore();
 
   return (
     <Tabs>

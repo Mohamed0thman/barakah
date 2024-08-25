@@ -41,10 +41,9 @@ const fetchCartProdcutsData = async (
         const data: Product = await agent.ProductsApi.product(
           product.productId
         );
-
         totalPrice + product.quantity * data.price;
 
-        return { ...product, ...data };
+        return { ...data, ...product };
       })
     );
     return { cartProducts, totalPrice };
@@ -55,7 +54,7 @@ const fetchCartProdcutsData = async (
 
 export const useCartProductList = (cartItems: CartItem[]) => {
   return useQuery<{ cartProducts: CartProduct[]; totalPrice: number }>({
-    queryKey: ["cartProduct"],
+    queryKey: ["cartProduct", cartItems.length],
     queryFn: () => fetchCartProdcutsData(cartItems),
   });
 };

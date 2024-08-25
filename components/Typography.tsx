@@ -5,9 +5,9 @@ import clsx from "clsx";
 const variantStyles = {
   default: "color-back text-s",
   h1: "text-xxl font-bold",
-  h2: "text-xl font-bold",
-  h3: `text-l font-medium`,
-  p: `text-m`,
+  h2: "text-xl font-medium",
+  h3: "text-l font-medium",
+  p: "text-m",
 };
 
 type Props = TextProps & {
