@@ -1,70 +1,114 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import {
+  ColumnItem,
+  Image,
+  Message,
+  RootView,
+  StarRating,
+  Typography,
+} from "@/components";
+import { useCategoryList, useProductList } from "@/hooks";
+import { Category, Product } from "@/types";
+import { FlashList } from "@shopify/flash-list";
+import { Link, RouteParamInput, useNavigation, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
 
 export default function HomeScreen() {
+  const [selectedCategory, setSelectedCategory] = useState<Category>("all");
+  const router = useRouter();
+  const navigation = useNavigation();
+
+  const {
+    data: categories,
+    error: categoryError,
+    isLoading: categoryLoading,
+  } = useCategoryList();
+  const {
+    data: products,
+    error: productError,
+    isLoading: productLoading,
+  } = useProductList(selectedCategory);
+
+  const handleOnSelectCategory = (category: Category) =>
+    setSelectedCategory(category);
+
+  const renderCategory = useCallback(
+    ({ item }: { item: Category }) => {
+      const active = selectedCategory === item;
+      return (
+        <Pressable onPress={() => handleOnSelectCategory(item)}>
+          <View
+            className={`p-s  mr-s rounded-m  ${
+              active ? "bg-primry-300" : "bg-white"
+            } `}
+          >
+            <Typography variant={"h3"} className="capitalize font-bold">
+              {item}
+            </Typography>
+          </View>
+        </Pressable>
+      );
+    },
+    [selectedCategory]
+  );
+
+  const renderProduct = useCallback(({ item }: { item: Product }) => {
+    return (
+      <Link
+        href={{
+          pathname: "/details",
+          params: {
+            ...item,
+            ...item.rating,
+          } as unknown as RouteParamInput<"/details">,
+        }}
+        asChild
+      >
+        <Pressable className="w-full h-full  p-xs ">
+          <Image uri={item.image} className="h-[200] p-xs " />
+          <Typography>{item.title}</Typography>
+
+          <Typography>{item.price}</Typography>
+
+          <StarRating
+            initialRating={item.rating.rate}
+            count={item.rating.count}
+          />
+        </Pressable>
+      </Link>
+    );
+  }, []);
+
+  useEffect(() => {
+    navigation.setOptions({ title: "Home" });
+  }, [navigation]);
+
+  if (productError || categoryError)
+    return (
+      <Message message={productError?.message || categoryError?.message} />
+    );
+
+  // if (categoryLoading || productLoading) return;
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <RootView>
+      <View className="flex-1 bg-white pt-m px-m">
+        <FlashList
+          renderItem={renderCategory}
+          horizontal
+          estimatedItemSize={50}
+          data={["all", ...(categories ?? [])]}
+          className="mb-m"
+          showsHorizontalScrollIndicator={false}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+        <FlashList
+          renderItem={renderProduct}
+          numColumns={2}
+          estimatedItemSize={50}
+          data={products ?? []}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </RootView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
