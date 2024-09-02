@@ -1,4 +1,4 @@
-import { Pressable, PressableProps, View } from "react-native";
+import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 import React, { forwardRef } from "react";
 import { clsx } from "clsx";
 import { Typography } from "./Typography";
@@ -15,21 +15,21 @@ const variantTextStyles = {
   outline: "text-primry-500",
 };
 
-type Props = PressableProps & {
+type Props = TouchableOpacityProps & {
   variant?: "default" | "primary" | "outline";
   icon?: React.ReactNode;
   text?: string;
 };
 
-export const Button = forwardRef<View, Props>(
-  ({ className, icon, variant = "primary", text, ...rest }, ref) => {
+export const Button = forwardRef<TouchableOpacity, Props>(
+  ({ className, icon, variant = "primary", text, ...props }, ref) => {
     return (
-      <Pressable
+      <TouchableOpacity
         ref={ref}
         className={clsx(
           `${variantStyles.default} ${variantStyles[variant]} ${className}`
         )}
-        {...rest}
+        {...props}
       >
         {icon && icon}
         {text && (
@@ -42,7 +42,7 @@ export const Button = forwardRef<View, Props>(
             {text}
           </Typography>
         )}
-      </Pressable>
+      </TouchableOpacity>
     );
   }
 );

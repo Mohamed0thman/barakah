@@ -1,5 +1,6 @@
 import { Cart, CartItem, CartProduct } from "@/types";
 import { create } from "zustand";
+import shallow from "zustand/shallow";
 
 export interface CartState {
   totalPrice: number;
@@ -8,7 +9,7 @@ export interface CartState {
   setCartData: (cart: Cart, totalItem: number) => void;
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  updateQuantity: (id: number, quantity: number, price: number) => void;
   clearCart: () => void;
 }
 
@@ -47,9 +48,10 @@ export const useCartStore = create<CartState>((set) => ({
       ...state,
       cartItems: state.cartItems.filter((item) => item.productId !== id),
     })),
-  updateQuantity: (id, quantity) =>
+  updateQuantity: (id, quantity, price) =>
     set((state) => ({
       ...state,
+      totalPrice: state.totalPrice + price,
       cartItems: state.cartItems.map((item) =>
         item.productId === id
           ? { ...item, quantity: item.quantity + quantity }
@@ -57,7 +59,7 @@ export const useCartStore = create<CartState>((set) => ({
       ),
     })),
   clearCart: () =>
-    set((state) => ({ 
+    set((state) => ({
       ...state,
       cartItems: [],
     })),

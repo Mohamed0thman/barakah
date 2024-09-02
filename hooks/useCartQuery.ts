@@ -41,7 +41,9 @@ const fetchCartProdcutsData = async (
         const data: Product = await agent.ProductsApi.product(
           product.productId
         );
-        totalPrice + product.quantity * data.price;
+        totalPrice += product.quantity * data.price;
+
+        console.log("totalPrice", totalPrice);
 
         return { ...data, ...product };
       })
@@ -56,6 +58,7 @@ export const useCartProductList = (cartItems: CartItem[]) => {
   return useQuery<{ cartProducts: CartProduct[]; totalPrice: number }>({
     queryKey: ["cartProduct", cartItems.length],
     queryFn: () => fetchCartProdcutsData(cartItems),
+    enabled: cartItems.length > 0,
   });
 };
 
@@ -69,13 +72,9 @@ export const useAddCartMutation = ({
   useMutation({
     mutationFn: (params: Cart) => agent.CartApi.addCart(params),
     onError(error: ErrorType) {
-      console.log(error.message);
-
       onError?.(error);
     },
     onSuccess(s) {
-      console.log("yes", s);
-
       onSuccess?.();
     },
   });
